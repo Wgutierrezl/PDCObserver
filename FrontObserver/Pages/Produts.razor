@@ -95,7 +95,7 @@
                 <h2>Producto Agregado Correctamente</h2>
                 <hr />
 
-                if (ListaNotificaciones!=null && ListaNotificaciones.Count>0)
+                if (ListaNotificaciones!=null)
                 {
                 <table>
                     <thead>
@@ -279,25 +279,27 @@
             {
                 success = true;
                 MessagePost = String.Empty;
-                ListaNotificaciones=Observer!.Notificar(Producto, "Insercion");
+                ListaNotificaciones!.AddRange(Observer!.Notificar(Producto, "Insercion"));
+                StateHasChanged();
 
                 foreach(var item in ListaNotificaciones)
                 {
                     Console.WriteLine(item);
                 }
+                
             }
             else
             {
                 success = false;
                 MessagePost = await response.ErrorMessage();
-                ListaNotificaciones = null;
+                ListaNotificaciones = new List<string>();
             }
 
         }catch (Exception e)
         {
             success = false;
             MessagePost = e.Message;
-            ListaNotificaciones = null;
+            ListaNotificaciones = new List<string>();
 
         }
 
@@ -363,19 +365,20 @@
                         SuccessDelete = true;
                         MessageDelete = String.Empty;
                         ListaNotificaciones = productoSujeto!.Notificar(ProductoBuscado, "Eliminacion");
+                        StateHasChanged();
                     }
                     else
                     {
                         SuccessDelete = false;
                         MessageDelete = await response.ErrorMessage();
-                        ListaNotificaciones = null;
+                        ListaNotificaciones = new List<string>();
                     }
 
                 }catch(Exception e)
                 {
                     SuccessDelete = false;
                     MessageDelete = e.Message;
-                    ListaNotificaciones = null;
+                    ListaNotificaciones = new List<string>();
 
                 }
             }
@@ -444,20 +447,21 @@
                 SuccessPut = true;
                 MessagePut = String.Empty;
                 ListaNotificaciones = Subjet.Notificar(ProductoPut, "Edicion");
+                StateHasChanged();
 
             }
             else
             {
                 SuccessPut = false;
                 MessagePutGet = await response.ErrorMessage();
-                ListaNotificaciones = null;
+                ListaNotificaciones = new List<string>();
             }
 
         }catch(Exception e)
         {
             SuccessPut = false;
             MessagePutGet = e.Message;
-            ListaNotificaciones = null;
+            ListaNotificaciones = new List<string>();
         }
 
     }
