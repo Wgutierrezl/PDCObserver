@@ -1,0 +1,527 @@
+﻿@page "/Produts"
+@inject IServiciosProductos ServiciosProductos
+
+<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Observer</title>
+        <link rel="stylesheet" href="~/css/app.css" />
+    </head>
+    <body>
+
+        <h1 class="H1">Lista de productos Iniciales</h1>
+        <hr />
+
+        @if(ListaP==null)
+        {
+            <h2>...Cargando</h2>
+        }
+        else
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>ProductoID</th>
+                        <th>NombreProducto</th>
+                        <th>Precio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach(var item in ListaP)
+                {
+                    <tr>
+                        <td>@item.ProductoID</td>
+                        <td>@item.NombreProducto</td>
+                        <td>@item.Precio</td>
+                    </tr>
+                }
+            </tbody>
+            </table>
+        }
+
+        <hr />
+
+        <div>
+            <h2>Agregar un nuevo Observador</h2>
+            <p>
+                Digite el id del Observador
+                <input type="text" @bind="idsubject" required />
+            </p>
+            <hr />
+            <p>
+                Digite el nombre del Observador
+                <input type="text" @bind="nombre" required />
+            </p>
+            <hr />
+            <p>
+                Digite el Apellido 
+                <input type="text" @bind="apellido" required />
+            </p>
+            <hr />
+
+            <button class="btn btn-outline-primary" @onclick="AgregarObservador">Agregar</button>
+
+            @if (error != false)
+            {
+                <p>Observador Agregado Correctamente</p>
+
+            }
+             else
+            {
+                <p>@MessageSujeto</p>
+            
+            }
+        </div>
+
+        <hr />
+
+        <div>
+            <h1 class="H1">Insertar Productos</h1>
+            <hr />
+            <p>
+                Digite el Nombre del Producto
+                <input type="text" @bind="Producto.NombreProducto" required /> 
+            </p>
+            <hr />
+            <p>
+                Digite el Precio del Producto
+                <input type="text" @bind="Producto.Precio" required />
+            </p>
+            <hr />
+            <button class="btn btn-outline-primary" @onclick="PostProductos">Agregar Producto</button>
+            @if (success != false)
+            {
+
+                <h2>Producto Agregado Correctamente</h2>
+                <hr />
+
+                if (ListaNotificaciones!=null && ListaNotificaciones.Count>0)
+                {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Notificaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ListaNotificaciones!)
+                        {
+                            <tr>
+                                <td>@item</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                }
+                
+            }
+            else
+            {
+                <p>@MessagePost</p>
+            }
+    </div>
+    <hr />
+
+    <div>
+        <h1 class="H1">Actualizacion de datos de un producto</h1>
+        <hr />
+        <p>
+            Digite el codigo del Producto a buscar
+            <input type="text" @bind="CodigoProductoEditar" required />
+        </p>
+        <hr />
+        <button class="btn btn-outline-primary" @onclick="TraerProducto">Buscar</button>
+        @if (ProductoPut != null)
+        {
+            <div>
+                <h2>Producto Encontrado</h2>
+                <hr />
+                <p>
+                    Digite el Nombre del producto a cambiar
+                    <input type="text" @bind="ProductoPut.NombreProducto" required />
+                </p>
+                <hr />
+                <p>
+                    Digite el precio del producto a Cambiar
+                    <input type="text" @bind="ProductoPut.Precio" required />
+                </p>
+                <hr />
+                <button class="btn btn-outline-primary" @onclick="EditarUnProducto">Modificar</button>
+                @if (SuccessPut != false)
+                {
+                    <h2>Producto modificado correctamente</h2>
+                    if (ListaNotificaciones != null)
+                    {
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Notificaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in ListaNotificaciones!)
+                                {
+                                    <tr>
+                                        <td>@item</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                }
+                else
+                {
+                    <p>@MessagePut</p>
+                }
+            </div>
+        }
+        else
+        {
+            <p>@MessagePutGet</p>
+        }
+    </div>
+    <hr />
+
+    <div>
+        <h1 class="H1">Eliminar un producto</h1>
+        <hr />
+        <p>
+            Digite el codigo del Producto
+            <input type="text" @bind="CodigoProducto" />
+        </p>
+
+        <button class="btn btn-outline-primary" @onclick="EliminarUnProducto">Eliminar</button>
+        @if (SuccessDelete != false)
+        {
+            <h2>Producto Eliminado correctamente</h2>
+            <hr />
+            if (ListaNotificaciones!=null)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Notificaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ListaNotificaciones!)
+                        {
+                            <tr>
+                                <td>@item</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+        else
+        {
+            <p>@MessageDelete</p>
+        }
+    </div>
+
+
+    </body>
+    </html>
+
+@code {
+
+    //Metodo para poder inicializar la lista de Productos
+    public List<Productos>? ListaP { get; set; }
+    public string? Message { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            string url = "https://localhost:7198/api/Productos";
+            var response = await ServiciosProductos.GetProductos<List<Productos>>(url);
+            if(!response.Error)
+            {
+                ListaP = response.Response;
+                Message = String.Empty;
+            }
+            else
+            {
+                ListaP = null;
+                Message = await response.ErrorMessage();
+            }
+
+        }catch(Exception e)
+        {
+            ListaP = null;
+            Message = e.Message;
+
+        }
+    }
+
+
+
+    //Crear una lista que reciba las notificaciones para cada accion, Insertar, Eliminar y actualizar
+    public List<string>? ListaNotificaciones { get; set; } = new List<string>();
+
+
+
+    //Metodo oara agregar un producto y Notificarle al observador
+    public Productos Producto { get; set; } = new Productos();
+    public bool success = false;
+    public string? MessagePost { get; set; }
+    public ProductoSujeto? Observer = new ProductoSujeto();
+    public async Task PostProductos()
+    {
+        ListaNotificaciones!.Clear();
+
+        try
+        {
+            string url = "https://localhost:7198/api/Productos";
+            var response = await ServiciosProductos.PostProductos<Productos>(url, Producto);
+            if(!response.Error)
+            {
+                success = true;
+                MessagePost = String.Empty;
+                ListaNotificaciones=Observer!.Notificar(Producto, "Insercion");
+
+                foreach(var item in ListaNotificaciones)
+                {
+                    Console.WriteLine(item);
+                }
+            }
+            else
+            {
+                success = false;
+                MessagePost = await response.ErrorMessage();
+                ListaNotificaciones = null;
+            }
+
+        }catch (Exception e)
+        {
+            success = false;
+            MessagePost = e.Message;
+            ListaNotificaciones = null;
+
+        }
+
+    }
+
+
+    //Metodo get filtrado para poder buscar el producto antes de eliminarlo y asi poder mandarlo como notificacion de 
+    //que el producto ha sido eliminado, este es un metodo que se utiliza en segundo plano, no se le pide al 
+    //Usuario que digite o busca, si no que con los mismos atributos del metodo para eliminar se hace la busqueda
+
+    public Productos? ProductoBuscado { get; set; }
+    public string? MessageGetFiltrado { get; set; }
+    public async Task GetFiltrado()
+    {
+        try
+        {
+            string url = "https://localhost:7198/api/Productos/" + CodigoProducto;
+            var response = await ServiciosProductos.GetProductos<Productos>(url);
+            if (!response.Error)
+            {
+                ProductoBuscado = response.Response;
+                MessageGetFiltrado = String.Empty;
+            }
+            else
+            {
+                ProductoBuscado = null;
+                MessageGetFiltrado = await response.ErrorMessage();
+            }
+
+
+        }catch(Exception e)
+        {
+            ProductoBuscado = null;
+            MessageGetFiltrado = e.Message;
+
+        }
+    }
+
+
+    public int CodigoProducto { get; set; }
+    public bool SuccessDelete = false;
+    public string? MessageDelete { get; set; }
+    public ProductoSujeto? productoSujeto = new ProductoSujeto();
+    public async Task EliminarUnProducto()
+    {
+        //Se limpia la lista antes de acceder a cada metodo para poder aplicar la logica y que no se sobrecargue 
+        //la lista con cada accion
+        ListaNotificaciones!.Clear();
+        try
+        {
+            //Primero se hace el proceso de buscar el producto, ya que lo debemos de mandar a la notificacion para
+            //Tener la informacion del objeto que se borro
+            await GetFiltrado();
+            if (ProductoBuscado != null)
+            {
+                //Deespues de que se haya encontrado el objeto, se hace el proceso para eliminarlo de la base de datos
+                try
+                {
+                    string url = "https://localhost:7198/api/Productos/" + CodigoProducto;
+                    var response = await ServiciosProductos.DeleteProductos(url);
+                    if (!response.Error)
+                    {
+                        SuccessDelete = true;
+                        MessageDelete = String.Empty;
+                        ListaNotificaciones = productoSujeto!.Notificar(ProductoBuscado, "Eliminacion");
+                    }
+                    else
+                    {
+                        SuccessDelete = false;
+                        MessageDelete = await response.ErrorMessage();
+                        ListaNotificaciones = null;
+                    }
+
+                }catch(Exception e)
+                {
+                    SuccessDelete = false;
+                    MessageDelete = e.Message;
+                    ListaNotificaciones = null;
+
+                }
+            }
+            else
+            {
+                MessageGetFiltrado += "Hubo un error que no conozco";
+            }
+
+        }catch(Exception e)
+        {
+            MessageGetFiltrado += e.Message;
+        }
+    }
+
+
+    //Metodo para la actualizacion
+
+    //Primero se hace uso del metodo get para poder buscar el producto a eliminar, podriamos utilizar el metodo get anterior
+    //Pero ese tiene los atributos del metodo para poder eliminar, por lo que no podriamos utilizarlo, toca hacer uno nuevo
+
+    public Productos? ProductoPut { get; set; }
+    public string? MessagePutGet { get; set; }
+    public int CodigoProductoEditar { get; set; }
+    public async Task TraerProducto()
+    {
+        try
+        {
+            string url = "https://localhost:7198/api/Productos/" + CodigoProductoEditar;
+            var response = await ServiciosProductos.GetProductos<Productos>(url);
+            if (!response.Error)
+            {
+                ProductoPut = response.Response;
+                MessagePutGet = String.Empty;
+            }
+            else
+            {
+                ProductoPut = null;
+                MessagePutGet = await response.ErrorMessage();
+
+            }
+
+        }catch(Exception e)
+        {
+            ProductoPut = null;
+            MessagePutGet = e.Message;
+
+        }
+
+    }
+
+    //Utilizamos primero el metodo para traer el Producto, despues ya con el metodo put utilizamos el objeto producto
+    //Del metodo get para poder actualizarlo
+
+    public bool SuccessPut =false;
+    public string? MessagePut { get; set; }
+    ProductoSujeto Subjet = new ProductoSujeto();
+    public async Task EditarUnProducto()
+    {
+        ListaNotificaciones!.Clear();
+        try
+        {
+            string url = "https://localhost:7198/api/Productos/" + CodigoProductoEditar;
+            var response = await ServiciosProductos.PutProductos<Productos>(url, ProductoPut);
+            if (!response.Error)
+            {
+                SuccessPut = true;
+                MessagePut = String.Empty;
+                ListaNotificaciones = Subjet.Notificar(ProductoPut, "Edicion");
+
+            }
+            else
+            {
+                SuccessPut = false;
+                MessagePutGet = await response.ErrorMessage();
+                ListaNotificaciones = null;
+            }
+
+        }catch(Exception e)
+        {
+            SuccessPut = false;
+            MessagePutGet = e.Message;
+            ListaNotificaciones = null;
+        }
+
+    }
+
+
+
+
+    //Metodo para agregar un observador, es decir un usuario a la lista
+    // public Sujeto? Subject { get; set; } = new Sujeto();
+
+    public int idsubject { get; set; }
+    public string? nombre { get; set; }
+    public string? apellido { get; set; }
+
+    public bool error = false;
+    public string? MessageSujeto { get; set; }
+    public ProductoSujeto? ps = new ProductoSujeto();
+    public void AgregarObservador()
+    {
+        try
+        {
+            Sujeto Subject = new Sujeto
+                {
+                    ID = idsubject,
+                    Nombre = nombre,
+                    Apellido = apellido
+                };
+
+            ps!.AgregarObservador(Subject!);
+            error = true;
+            MessageSujeto = String.Empty;
+
+
+        }catch  (Exception e)
+        {
+            error = false;
+            MessageSujeto = e.Message;
+        }
+
+    }
+
+    //Metodo para eliminar un observador, es decir, quitar un usuario de la lista
+    public int CodObservador { get; set; }
+    public string? MensageObservador { get; set; }
+    public ProductoSujeto? ProductSubject = new ProductoSujeto();
+    public void EliminarObservador()
+    {
+        try
+        {
+            var observador = ProductSubject!.BuscarObservador(CodObservador);
+            if (observador == null)
+            {
+                MensageObservador = "No se encontro el observador";
+            }
+
+            ProductSubject.EliminarObservador(observador!);
+            MensageObservador = "Eliminado correctamente";
+
+        }catch(Exception e)
+        {
+            MensageObservador = e.Message;
+
+            
+        }
+
+    }
+}
