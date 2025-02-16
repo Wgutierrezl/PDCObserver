@@ -106,7 +106,7 @@ code {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Elegante y moderno */
     font-size: 2.5rem; /* Tamaño ajustado para resaltar el título */
     color: #4a4a4a; /* Gris oscuro, combina con los temas modernos */
-    text-align: center; /* Centrado, ideal para encabezados principales */
+    text-align: left; /* Centrado, ideal para encabezados principales */
     margin-top: 20px; /* Espaciado limpio */
     letter-spacing: 0.05em; /* Espaciado suave entre letras */
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1)
@@ -136,6 +136,37 @@ tr:nth-child(even) {
 tr:hover {
     background-color: #e2e6ea;
     cursor: pointer;
+}
+
+.container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo para el input */
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ced4da;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+    input[type="text"]:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+/* Estilo para los párrafos */
+p {
+    font-size: 18px;
+    color: #333;
+    line-height: 1.6;
 }
 
 
